@@ -1,0 +1,29 @@
+{
+ "updated": "2026-11-11 08:24 UTC",
+ "channels": [
+  {
+   "username": "schematicslaptop",
+   "title": "schematics|boardviews| ARCHIVE 💻 💻",
+   "count": 4346,
+   "complete": false,
+   "file": "data/schematicslaptop.json",
+   "v": 18681
+  },
+  {
+   "username": "biosarchive",
+   "title": "BIOS ARCHIVE | BIOS |Laptop Firmware & Tools",
+   "count": 3823,
+   "complete": false,
+   "file": "data/biosarchive.json",
+   "v": 30946
+  },
+  {
+   "username": "iranianRefix",
+   "title": "Problems solved",
+   "count": 285,
+   "complete": true,
+   "file": "data/iranianrefix.json",
+   "v": 468
+  }
+ ]
+}
