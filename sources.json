@@ -1,0 +1,20 @@
+{
+  "telegram": [
+    {"username": "schematicslaptop", "note": "schematics|boardviews ARCHIVE — ~150 тис. підписників, PDF/BRD/BDV/TVW"},
+    {"username": "LaptopsBoardview", "note": "Laptops Motherboard Boardview Schematic"},
+    {"username": "biosarchive", "note": "Архів BIOS ноутбуків"},
+    {"username": "iranianRefix", "note": "Переглядачі boardview та файли"}
+  ],
+  "sites": [
+    {"domain": "badcaps.net", "note": "Форум, розділ Schematics and Boardviews"},
+    {"domain": "vinafix.com", "note": "Вʼєтнамський форум, багато схем і boardview"},
+    {"domain": "alexlaptoprepair.com", "note": "Форум: схеми, boardview, BIOS"},
+    {"domain": "elektrotanya.com", "note": "Безкоштовні схеми й сервіс-мануали"},
+    {"domain": "elektroda.com", "note": "Польський форум ремонтників"},
+    {"domain": "cyberforum.ru", "note": "Розділ «Схемы плат ноутбуков»"},
+    {"domain": "schematic-x.blogspot.com", "note": "Схеми та BIOS ноутбуків"},
+    {"domain": "apple-schematic.se", "note": "Схеми та BRD для MacBook"},
+    {"domain": "remont-aud.net", "note": "Схеми, даташити, дампи"},
+    {"domain": "sector.biz.ua", "note": "Схеми та boardview Asus/Acer/Lenovo/MSI"}
+  ]
+}

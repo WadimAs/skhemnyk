@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101513">
+<title>Схемник — схеми та boardview</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{
+  --bg:#101513; --panel:#161d1a; --panel2:#1c2521; --line:#26312c; --text:#e6ece8; --muted:#8a9a92;
+  --copper:#e2a04a; --copper2:#f3c27f; --sch:#6fb6ff; --bv:#e2a04a; --bios:#c49bff; --post:#8a9a92; --ok:#5fd38d; --err:#ff7a6b;
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Consolas, monospace;
+  --r:12px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+a{color:var(--copper2)}
+button,input{font:inherit;color:inherit}
+.wrap{max-width:980px;margin:0 auto;padding:16px 16px 96px}
+header{display:flex;align-items:center;gap:12px;padding:6px 0 14px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px;letter-spacing:.2px}
+.logo svg{width:30px;height:30px}
+.logo small{display:block;font-weight:400;font-size:12px;color:var(--muted);letter-spacing:0}
+nav.tabs{margin-left:auto;display:flex;gap:4px}
+nav.tabs button{background:none;border:0;padding:8px 12px;border-radius:8px;color:var(--muted);cursor:pointer}
+nav.tabs button.on{background:var(--panel2);color:var(--text)}
+@media (max-width:700px){
+  nav.tabs{position:fixed;left:0;right:0;bottom:0;margin:0;background:#0c100e;border-top:1px solid var(--line);
+    padding:6px 8px calc(6px + env(safe-area-inset-bottom));justify-content:space-around;z-index:5}
+  nav.tabs button{flex:1;display:flex;flex-direction:column;align-items:center;font-size:12px;gap:2px}
+  nav.tabs button .i{font-size:18px}
+}
+@media (min-width:701px){ nav.tabs button .i{display:none} }
+
+.search{position:sticky;top:0;z-index:4;background:linear-gradient(var(--bg) 80%,transparent);padding:6px 0 10px}
+.sbox{display:flex;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:6px;transition:border-color .15s}
+.sbox:focus-within{border-color:var(--copper)}
+.sbox input{flex:1;min-width:0;background:none;border:0;outline:0;padding:10px 10px;font-family:var(--mono);font-size:17px;letter-spacing:.3px}
+.sbox input::placeholder{font-family:system-ui,sans-serif;color:#66766e;letter-spacing:0;font-size:15px}
+.btn{background:var(--copper);color:#1b1206;border:0;border-radius:10px;padding:10px 16px;font-weight:650;cursor:pointer}
+.btn:disabled{opacity:.5}
+.btn.ghost{background:var(--panel2);color:var(--text);border:1px solid var(--line);font-weight:500}
+.btn.sm{padding:6px 10px;font-size:13px;border-radius:8px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:10px 0 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:5px 12px;font-size:13px;color:var(--muted);cursor:pointer;white-space:nowrap}
+.chip.on{border-color:var(--copper);color:var(--copper2);background:#2a2115}
+.chip b{color:var(--text);font-weight:600;margin-left:4px}
+.board{font-family:var(--mono);font-size:13px;color:var(--copper2);margin-top:8px;min-height:18px}
+.board span{color:var(--muted);font-family:system-ui,sans-serif}
+.progress{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin:6px 0 10px}
+.progress .s::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:#3a4741;vertical-align:1px}
+.progress .s.run::before{background:var(--copper);animation:pulse 1s infinite}
+.progress .s.ok::before{background:var(--ok)}
+.progress .s.err::before{background:var(--err)}
+@keyframes pulse{50%{opacity:.25}}
+
+.list{display:grid;gap:8px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:grid;gap:6px}
+.card .top{display:flex;gap:8px;align-items:flex-start}
+.kind{flex:none;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:3px 7px;border-radius:6px;margin-top:2px}
+.k-schematic{color:var(--sch);background:#16263a}
+.k-boardview{color:var(--bv);background:#2c2213}
+.k-bios{color:var(--bios);background:#261d38}
+.k-post,.k-other{color:var(--post);background:#1f2824}
+.title{font-family:var(--mono);font-size:14px;word-break:break-word;line-height:1.4}
+mark{background:#5a3f12;color:#ffe2b0;border-radius:3px;padding:0 2px}
+.meta{font-size:12.5px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap}
+.meta .src{color:#b6c5bd}
+.cap{font-size:13px;color:#a9b7b0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.acts a{font-size:13px;text-decoration:none;padding:6px 10px;border-radius:8px;background:var(--panel2);border:1px solid var(--line);color:var(--text)}
+.acts a.pri{background:#2a2115;border-color:#5a4220;color:var(--copper2)}
+.empty{color:var(--muted);text-align:center;padding:28px 10px}
+.manual{margin-top:18px;background:var(--panel);border:1px dashed var(--line);border-radius:var(--r);padding:12px 14px}
+.manual h3{margin:0 0 8px;font-size:14px;font-weight:600}
+.manual .links{display:flex;flex-wrap:wrap;gap:6px}
+.manual .links a{font-size:12.5px;text-decoration:none;padding:5px 9px;border-radius:7px;background:var(--panel2);color:#c8d4ce;border:1px solid var(--line)}
+.recent{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.hero{padding:18px 4px 4px;color:var(--muted)}
+.hero h2{color:var(--text);font-size:18px;margin:0 0 6px}
+.hero code,.help code{font-family:var(--mono);color:var(--copper2);font-size:13px}
+
+section.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
+section.panel h3{margin:0 0 10px;font-size:15px}
+.srcrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.srcrow:first-of-type{border-top:0}
+.srcrow .nm{font-family:var(--mono);font-size:14px}
+.srcrow .nt{font-size:12px;color:var(--muted)}
+.srcrow .grow{flex:1;min-width:0}
+.srcrow .cnt{font-size:12px;color:var(--muted);white-space:nowrap}
+.tgl{width:40px;height:24px;border-radius:12px;background:#33403a;border:0;position:relative;cursor:pointer;flex:none}
+.tgl::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#cfd8d3;transition:.15s}
+.tgl.on{background:var(--copper)}
+.tgl.on::after{left:19px;background:#1b1206}
+.x{background:none;border:0;color:var(--muted);font-size:18px;cursor:pointer;padding:2px 6px}
+.add{display:flex;gap:8px;margin-top:10px}
+.add input{flex:1;min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;outline:0}
+.add input:focus{border-color:var(--copper)}
+.note{font-size:13px;color:var(--muted)}
+.stat{font-family:var(--mono);font-size:13px;color:#c8d4ce;white-space:pre-wrap}
+.help p,.help li{color:#c3cec8}
+.help table{border-collapse:collapse;width:100%;font-size:13.5px}
+.help td{border-top:1px solid var(--line);padding:7px 6px;vertical-align:top}
+.help td:first-child{color:var(--text);white-space:nowrap}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#26312c;border:1px solid #3a4741;padding:10px 14px;border-radius:10px;font-size:14px;z-index:20;max-width:90vw}
+.login{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:30;padding:20px}
+.login .box{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;width:100%;max-width:340px;display:grid;gap:12px}
+.login input{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;outline:0}
+.hidden{display:none!important}
+</style>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="2" y="2" width="28" height="28" rx="7" fill="#1c2521" stroke="#e2a04a" stroke-width="1.5"/><path d="M8 11h6l3 4h7M8 21h4l3-3h9" fill="none" stroke="#e2a04a" stroke-width="1.8" stroke-linecap="round"/><circle cx="8" cy="11" r="2" fill="#f3c27f"/><circle cx="8" cy="21" r="2" fill="#f3c27f"/><circle cx="24" cy="15" r="2" fill="#f3c27f"/><circle cx="24" cy="18" r="2" fill="#f3c27f"/></svg>
+      <div>Схемник<small>схеми · boardview · BIOS</small></div>
+    </div>
+    <nav class="tabs">
+      <button data-tab="search" class="on"><span class="i">⌕</span>Пошук</button>
+      <button data-tab="sources"><span class="i">☰</span>Джерела</button>
+      <button data-tab="help"><span class="i">?</span>Довідка</button>
+    </nav>
+  </header>
+
+  <main id="tab-search">
+    <div class="search">
+      <form class="sbox" id="form" autocomplete="off">
+        <input id="q" type="search" placeholder="Номер плати або модель: LA-K991P, NM-A311, X555LD…" enterkeyhint="search" autocapitalize="characters" spellcheck="false">
+        <button class="btn" id="go">Шукати</button>
+      </form>
+      <div class="chips" id="filters"></div>
+      <div class="board" id="board"></div>
+    </div>
+    <div class="progress" id="progress"><span class="s run">Завантажую базу…</span></div>
+    <div class="list" id="results"></div>
+    <div id="hero" class="hero">
+      <h2>Що шукаємо?</h2>
+      Найточніше шукати за номером плати, надрукованим на самій платі: <code>LA-K991P</code>, <code>NM-B191</code>, <code>DA0X8ZMB6D0</code>, <code>448.0GC01.0011</code>, <code>820-00875</code>.
+      Пошук іде по базі Telegram-каналів, яка сама оновлюється кожні 3 години. Нижче результатів є посилання для пошуку на форумах і сайтах.
+      <div class="recent" id="recent"></div>
+    </div>
+    <div class="manual hidden" id="manual">
+      <h3>Шукати ще на сайтах і в Telegram</h3>
+      <div class="links" id="mlinks"></div>
+    </div>
+  </main>
+
+  <main id="tab-sources" class="hidden">
+    <section class="panel">
+      <h3>База</h3>
+      <div class="stat" id="stat">…</div>
+      <div class="note" style="margin-top:8px">Базу оновлює GitHub за розкладом: спершу забирає нові пости, а потім поступово догортає стару історію каналів. Великий канал проіндексується повністю приблизно за добу-дві.</div>
+    </section>
+    <section class="panel">
+      <h3>Telegram-канали</h3>
+      <div id="tgList"></div>
+    </section>
+    <section class="panel">
+      <h3>Сайти та форуми</h3>
+      <div id="siteList"></div>
+    </section>
+    <section class="panel">
+      <h3>Додати чи прибрати джерело</h3>
+      <p class="note">Джерела записані у файлі <code>sources.json</code> на GitHub. Відредагуй його (працює і з телефона), і після збереження база перебудується сама.</p>
+      <a class="btn ghost sm" id="editLink" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none">Редагувати sources.json</a>
+    </section>
+  </main>
+
+  <main id="tab-help" class="hidden help">
+    <section class="panel">
+      <h3>Модель → номер плати</h3>
+      <p class="note">Якщо знаєш, яка плата стоїть у моделі, додай відповідність: пошук за моделлю шукатиме і за номером плати. Зберігається на цьому пристрої.</p>
+      <form class="add" id="aliasForm"><input id="am" placeholder="Модель: Lenovo G50-30"><input id="ab" placeholder="Плата: NM-A311"><button class="btn sm">Зберегти</button></form>
+      <div id="aliasList" style="margin-top:8px"></div>
+    </section>
+    <section class="panel">
+      <h3>Де шукати номер плати</h3>
+      <table>
+        <tr><td>Compal</td><td><code>LA-xxxxP</code>, <code>NM-Axxx</code> (Lenovo/LCFC) — біля слотів памʼяті або під акумулятором</td></tr>
+        <tr><td>Quanta</td><td><code>DA0xxxMBxxx</code> — часто плутають O та 0, пошук перевіряє обидва варіанти</td></tr>
+        <tr><td>Wistron</td><td><code>448.xxxxx.xxxx</code>, кодова назва плати поруч</td></tr>
+        <tr><td>Inventec</td><td><code>6050Axxxxxxx</code></td></tr>
+        <tr><td>Pegatron / Asus</td><td>модель плати, напр. <code>X555LD MB REV 2.0</code>, <code>60NBxxxx</code></td></tr>
+        <tr><td>Apple</td><td><code>820-xxxxx</code></td></tr>
+        <tr><td>Dell</td><td><code>xxxxx-1</code> (напр. <code>15341-1</code>), або плата Compal/Quanta</td></tr>
+        <tr><td>Samsung</td><td><code>BA41-xxxxxA</code></td></tr>
+        <tr><td>MSI</td><td><code>MS-xxxxx</code> + ver</td></tr>
+      </table>
+    </section>
+    <section class="panel">
+      <h3>Чим відкривати</h3>
+      <p>Boardview <code>.brd .bdv .bv .cad .fz .asc</code> — OpenBoardView або FlexBV Free. <code>.tvw</code> — Tebo-ICT View. Архіви <code>.rar</code> з каналів зазвичай містять BDV/CAD.</p>
+    </section>
+  </main>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const KIND = {s:"Схема", b:"Boardview", i:"BIOS", p:"Пост", o:"Файл"};
+const KCLS = {s:"schematic", b:"boardview", i:"bios", p:"post", o:"other"};
+const store = {
+  get(k, d){ try{ return JSON.parse(localStorage.getItem(k)) ?? d }catch{ return d } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)) }catch{} }
+};
+const compact = s => (s||"").toUpperCase().replace(/[^0-9A-ZА-ЯІЇЄҐ]/g,"").replace(/DAO/g,"DA0");
+const BOARDS = [
+  [/\bLA-?[A-Z]?\d{3,4}[A-Z]?P?\b/, "Compal"], [/\bLS-?[A-Z]?\d{3,4}[A-Z]?P?\b/, "Compal (дочірня)"],
+  [/\bNM-?[A-Z]\d{3,4}\b/, "LCFC/Compal"], [/\bDA[0O][A-Z0-9]{2,4}MB[A-Z0-9]{3}\b/, "Quanta"],
+  [/\b448\.[0-9A-Z]{5}\.[0-9A-Z]{4}\b/, "Wistron"], [/\b6050A\d{7}\b/, "Inventec"], [/\b820-\d{4,5}(-\d{2})?\b/, "Apple"],
+  [/\bBA41-\d{5}[A-Z]?\b/, "Samsung"], [/\b\d{5}-\d\b/, "Dell"], [/\bMS-\d{4,5}\b/, "MSI"], [/\b60NB[0-9A-Z]{4}\b/, "Asus"],
+];
+const tokens = q => q.split(/[\s,;/]+/).map(compact).filter(t => t.length >= 2).slice(0, 6);
+
+let DB = [];            // {ch, title, cap, kind, size, date, id, sub, c1, c2}
+let META = {channels:[]}, SRC = {telegram:[], sites:[]};
+let state = {q:"", res:[], filter:"all"};
+
+const REPO = (() => {
+  const m = location.hostname.match(/^([^.]+)\.github\.io$/);
+  const repo = location.pathname.split("/").filter(Boolean)[0];
+  return m ? `https://github.com/${m[1]}/${repo || m[1] + ".github.io"}` : null;
+})();
+
+/* ---------- вкладки ---------- */
+document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav.tabs button").forEach(x => x.classList.toggle("on", x===b));
+  ["search","sources","help"].forEach(t => $("#tab-"+t).classList.toggle("hidden", t!==b.dataset.tab));
+  if (b.dataset.tab==="sources") renderSources();
+  if (b.dataset.tab==="help") renderAliases();
+  window.scrollTo(0,0);
+});
+
+/* ---------- завантаження бази ---------- */
+async function loadDB(){
+  try{
+    [META, SRC] = await Promise.all([
+      fetch("data/manifest.json", {cache:"no-cache"}).then(r => r.ok ? r.json() : {channels:[]}),
+      fetch("sources.json", {cache:"no-cache"}).then(r => r.json()),
+    ]);
+  }catch{ META = META || {channels:[]} }
+  const parts = await Promise.all(META.channels.map(c =>
+    fetch(`${c.file}?v=${c.v}`).then(r => r.json()).then(j => ({c, j})).catch(() => null)));
+  const out = [];
+  for (const p of parts){
+    if (!p) continue;
+    const ch = p.c.username, title = p.j.title || ch;
+    for (const [id, name, cap, kind, size, date, sub] of p.j.items){
+      out.push({ch, src:title, id, sub, title:name, cap, kind, size, date, c1:compact(name), c2:compact(cap)});
+    }
+  }
+  DB = out;
+  const total = DB.length;
+  $("#progress").innerHTML = total
+    ? `<span class="s ok">У базі ${total.toLocaleString("uk-UA")} файлів і постів${META.updated ? " · оновлено " + esc(META.updated) : ""}</span>`
+    : `<span class="s err">База ще порожня — перше оновлення на GitHub ще не завершилось</span>`;
+}
+
+/* ---------- пошук ---------- */
+function detectBoard(q){
+  const up = q.toUpperCase();
+  for (const [re, v] of BOARDS){ const m = up.match(re); if (m) return [m[0], v] }
+  return null;
+}
+function aliasFor(q){ return store.get("aliases", {})[compact(q)] }
+
+function find(q){
+  const groups = [tokens(q)];
+  const al = aliasFor(q);
+  if (al) groups.push(tokens(al));
+  const seen = new Set(), res = [];
+  for (const g of groups){
+    if (!g.length) continue;
+    for (const it of DB){
+      let s = 0, ok = true;
+      for (const t of g){
+        if (it.c1.includes(t)) s += 3;
+        else if (it.c2.includes(t)) s += 1;
+        else { ok = false; break }
+      }
+      if (!ok) continue;
+      const key = it.ch + "/" + it.id + "/" + it.sub;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      res.push({...it, score: s / g.length + (it.kind === "p" ? -0.5 : 0)});
+    }
+  }
+  res.sort((a, b) => (b.score - a.score) || String(b.date).localeCompare(String(a.date)));
+  return res;
+}
+
+function highlight(text, q){
+  const t = esc(text);
+  const toks = tokens(q).map(t => [...t].map(ch => /[0O]/.test(ch) ? "[0O]" : ch.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("[-\\s_.]?"));
+  if (!toks.length) return t;
+  try { return t.replace(new RegExp("("+toks.join("|")+")","gi"), "<mark>$1</mark>") } catch { return t }
+}
+
+function render(){
+  const all = state.res, counts = {all: all.length};
+  all.forEach(i => counts[i.kind] = (counts[i.kind]||0) + 1);
+  const F = [["all","Усі"],["s","Схеми"],["b","Boardview"],["i","BIOS"],["p","Пости"],["o","Інше"]];
+  $("#filters").innerHTML = state.q ? F.filter(([k]) => k==="all" || counts[k]).map(([k,n]) =>
+    `<button class="chip ${state.filter===k?"on":""}" data-f="${k}">${n}<b>${counts[k]||0}</b></button>`).join("") : "";
+  document.querySelectorAll("#filters .chip").forEach(c => c.onclick = () => { state.filter = c.dataset.f; render() });
+  const shown = all.filter(i => state.filter==="all" || i.kind===state.filter);
+  $("#results").innerHTML = shown.slice(0, 300).map(card).join("") + (shown.length > 300 ? `<div class="empty">Показано 300 з ${shown.length}. Уточни запит.</div>` : "") ||
+    (state.q ? `<div class="empty">У базі нічого. Спробуй інший варіант номера (без ревізії, без дефісу) або пошукай на сайтах нижче.</div>` : "");
+}
+
+function card(i){
+  const url = `https://t.me/${encodeURIComponent(i.ch)}/${i.id}`;
+  return `<article class="card">
+    <div class="top"><span class="kind k-${KCLS[i.kind]}">${KIND[i.kind]}</span><div class="title">${highlight(i.title, state.q)}</div></div>
+    ${i.cap ? `<div class="cap">${highlight(i.cap, state.q)}</div>` : ""}
+    <div class="meta"><span class="src">✈ ${esc(i.src)}</span>${i.size?`<span>${esc(i.size)}</span>`:""}${i.date?`<span>${esc(i.date)}</span>`:""}</div>
+    <div class="acts"><a class="pri" href="${url}" target="_blank" rel="noopener">Відкрити в Telegram</a></div>
+  </article>`;
+}
+
+function search(q){
+  q = q.trim().replace(/\s+/g, " ");
+  if (compact(q).length < 3){ toast("Введи щонайменше 3 символи"); return }
+  state = {q, res: find(q), filter: "all"};
+  $("#q").value = q; $("#hero").classList.add("hidden");
+  try{ history.replaceState(null, "", "?q=" + encodeURIComponent(q)) }catch{}
+  store.set("recent", [q, ...store.get("recent", []).filter(x => x.toUpperCase() !== q.toUpperCase())].slice(0, 10));
+  const b = detectBoard(q), al = aliasFor(q);
+  $("#board").innerHTML = b ? `${esc(b[0])} <span>· ${esc(b[1])}${al?` · плата: ${esc(al)}`:""}</span>` : al ? `${esc(al)} <span>· плата для цієї моделі</span>` : "";
+  render();
+  manualLinks(q);
+}
+
+function manualLinks(q){
+  const e = encodeURIComponent, l = [];
+  l.push(`<a href="https://www.google.com/search?q=${e(q + " schematic boardview")}" target="_blank" rel="noopener">🌐 Google (усе)</a>`);
+  for (const s of SRC.sites) l.push(`<a href="https://www.google.com/search?q=${e(q + " site:" + s.domain)}" target="_blank" rel="noopener">🌐 ${esc(s.domain)}</a>`);
+  for (const c of SRC.telegram) l.push(`<a href="https://t.me/s/${e(c.username)}?q=${e(q)}" target="_blank" rel="noopener">✈ @${esc(c.username)} (свіже)</a>`);
+  $("#mlinks").innerHTML = l.join("");
+  $("#manual").classList.remove("hidden");
+}
+
+function showRecent(){
+  $("#recent").innerHTML = store.get("recent", []).map(x => `<button class="chip" data-q="${esc(x)}">${esc(x)}</button>`).join("");
+  document.querySelectorAll("#recent .chip").forEach(c => c.onclick = () => search(c.dataset.q));
+}
+function toast(t){ const d=document.createElement("div"); d.className="toast"; d.textContent=t; document.body.append(d); setTimeout(()=>d.remove(), 3000) }
+
+$("#form").onsubmit = e => { e.preventDefault(); search($("#q").value) };
+
+/* ---------- джерела ---------- */
+function renderSources(){
+  const by = Object.fromEntries((META.channels||[]).map(c => [c.username.toLowerCase(), c]));
+  $("#stat").textContent = `Файлів і постів: ${DB.length.toLocaleString("uk-UA")}\nОстаннє оновлення: ${META.updated || "ще не було"}`;
+  $("#tgList").innerHTML = SRC.telegram.map(c => {
+    const m = by[c.username.toLowerCase()];
+    const st = m ? `${m.count.toLocaleString("uk-UA")} · ${m.complete ? "уся історія" : "догортається"}` : "ще не індексовано";
+    return `<div class="srcrow"><div class="grow"><div class="nm"><a href="https://t.me/${esc(c.username)}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">@${esc(c.username)}</a></div><div class="nt">${esc(c.note||"")}</div></div><span class="cnt">${st}</span></div>`;
+  }).join("");
+  $("#siteList").innerHTML = SRC.sites.map(s => `<div class="srcrow"><div class="grow"><div class="nm">${esc(s.domain)}</div><div class="nt">${esc(s.note||"")}</div></div></div>`).join("");
+  const el = $("#editLink");
+  if (REPO){ el.href = REPO + "/edit/main/sources.json" } else { el.classList.add("hidden") }
+}
+
+/* ---------- модель → плата (на пристрої) ---------- */
+function renderAliases(){
+  const a = store.get("aliases", {}), names = store.get("aliasNames", {});
+  $("#aliasList").innerHTML = Object.entries(a).map(([k, v]) => `<div class="srcrow"><div class="grow"><div class="nm">${esc(names[k] || k)}</div></div><span class="title">${esc(v)}</span><button class="x" data-k="${esc(k)}" aria-label="Видалити">×</button></div>`).join("") || `<div class="note">Поки порожньо</div>`;
+  document.querySelectorAll("#aliasList .x").forEach(b => b.onclick = () => {
+    const a = store.get("aliases", {}); delete a[b.dataset.k]; store.set("aliases", a); renderAliases();
+  });
+}
+$("#aliasForm").onsubmit = e => {
+  e.preventDefault();
+  const m = $("#am").value.trim(), b = $("#ab").value.trim();
+  if (!m || !b) return;
+  const a = store.get("aliases", {}), n = store.get("aliasNames", {});
+  a[compact(m)] = b; n[compact(m)] = m; store.set("aliases", a); store.set("aliasNames", n);
+  $("#am").value = $("#ab").value = ""; renderAliases(); toast("Збережено");
+};
+
+(async () => {
+  showRecent();
+  await loadDB();
+  const q = new URLSearchParams(location.search).get("q");
+  if (q) search(q);
+})();
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>
