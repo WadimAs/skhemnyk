@@ -1,10 +1,10 @@
 {
- "updated": "2026-11-11 17:05 UTC",
+ "updated": "2026-11-12 00:37 UTC",
  "channels": [
   {
    "username": "schematicslaptop",
    "title": "schematics|boardviews| ARCHIVE 💻 💻",
-   "count": 9264,
+   "count": 14244,
    "complete": false,
    "file": "data/schematicslaptop.json",
    "v": 18681
@@ -12,7 +12,7 @@
   {
    "username": "biosarchive",
    "title": "BIOS ARCHIVE | BIOS |Laptop Firmware & Tools",
-   "count": 8763,
+   "count": 13722,
    "complete": false,
    "file": "data/biosarchive.json",
    "v": 30946
