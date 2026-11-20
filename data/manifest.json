@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-20 02:17 UTC",
+ "updated": "2026-11-20 11:28 UTC",
  "channels": [
   {
    "username": "schematicslaptop",
@@ -12,10 +12,10 @@
   {
    "username": "biosarchive",
    "title": "BIOS ARCHIVE | BIOS |Laptop Firmware & Tools",
-   "count": 27160,
+   "count": 27164,
    "complete": true,
    "file": "data/biosarchive.json",
-   "v": 31006
+   "v": 31013
   },
   {
    "username": "iranianRefix",
