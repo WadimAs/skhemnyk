@@ -1,21 +1,21 @@
 {
- "updated": "2026-11-24 13:36 UTC",
+ "updated": "2026-11-24 23:52 UTC",
  "channels": [
   {
    "username": "schematicslaptop",
    "title": "schematics|boardviews| ARCHIVE 💻 💻",
-   "count": 17073,
+   "count": 17074,
    "complete": true,
    "file": "data/schematicslaptop.json",
-   "v": 18704
+   "v": 18705
   },
   {
    "username": "biosarchive",
    "title": "BIOS ARCHIVE | BIOS |Laptop Firmware & Tools",
-   "count": 27167,
+   "count": 27168,
    "complete": true,
    "file": "data/biosarchive.json",
-   "v": 31016
+   "v": 31017
   },
   {
    "username": "iranianRefix",
